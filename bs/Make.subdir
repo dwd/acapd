@@ -1,0 +1,149 @@
+# -*- Makefile -*-
+
+LOC:=$(LOC)
+
+ifdef MODULE
+$(MODULE):=$(MODULE)
+
+$(MODULE)_LOC:=$(LOC)
+$(MODULE)_CXXSOURCES:=$(CXXSOURCES)
+$(MODULE)_CSOURCES:=$(CSOURCES)
+$(MODULE)_OUTPUT:=$(OUTPUT)
+$(MODULE)_HDRS:=$(HDRS)
+$(MODULE)_CFLAGS:=$(CFLAGS)
+$(MODULE)_CXXFLAGS:=$(CXXFLAGS)
+$(MODULE)_LDFLAGS:=$(LDFLAGS)
+$(MODULE)_WHEN:=$(WHEN)
+
+$(MODULE)_CSOURCESX:=$(addprefix $($(MODULE)_LOC),$($(MODULE)_CSOURCES))
+$(MODULE)_CXXSOURCESX:=$(addprefix $($(MODULE)_LOC),$($(MODULE)_CXXSOURCES))
+$(MODULE)_CXXOBJECTS:=$(patsubst %.cc,$(BUILDDIR)%.o,$($(MODULE)_CXXSOURCESX))
+$(MODULE)_COBJECTS:=$(patsubst %.c,$(BUILDDIR)%.o,$($(MODULE)_CSOURCESX))
+
+$(MODULE)_OBJECTSS:=$(patsubst %.cc,%.o,$($(MODULE)_CXXSOURCES))
+$(MODULE)_OBJECTSS+=$(patsubst %.c,%.o,$($(MODULE)_CSOURCES))
+
+$(MODULE)_OBJECTSX:=$($(MODULE)_COBJECTS) $($(MODULE)_CXXOBJECTS)
+
+$(MODULE)_DEPS:=$(patsubst %.o,%.d,$($(MODULE)_OBJECTSX))
+
+-include $($(MODULE)_DEPS)
+.PHONY: $($(MODULE)_DEPS)
+
+$(MODULE)-clean::
+	@$(RM) $($(subst -clean,,$@)_DEPS)
+
+$(MODULE)_LINK:=$(CC)
+ifdef LINK
+$(MODULE)_LINK:=$(LINK)
+endif
+ifdef $(MODULE)_CXXSOURCES
+$(MODULE)_LINK:=$(CXX)
+endif
+
+$(MODULE)_LIBDEPS:=$(LIBDEPS)
+$(MODULE)_LIBDEPSX:=$(patsubst %,lib%.a,$($(MODULE)_LIBDEPS))
+
+$(MODULE)_EXTLIBS:=$(EXTLIBS)
+$(MODULE)_EXTLIBSX:=$(addprefix -l,$($(MODULE)_EXTLIBS))
+
+$(MODULE)_LIBDIRS:=$(LIBDIRS)
+$(MODULE)_LIBDIRSX:=$(addprefix -L,$($(MODULE)_LIBDIRS))
+
+$(MODULE)_OBJDEPS:=$(OBJDEPS)
+$(MODULE)_OBJDEPSX:=$(patsubst %,$(BUILDDIR)$($(MODULE)_LOC)%.o,$($(MODULE)_OBJDEPS))
+
+#VPATH+=:$(BUILDDIR)$((MODULE)_LOC)
+#VPATH+=:$($(MODULE)_LOC)
+
+ifdef $(MODULE)_OUTPUT
+ifeq ($($(MODULE)_OUTPUT),lib)
+$(MODULE)_TARGET:=$(BUILDDIR)lib$(MODULE).a
+$($(MODULE)_TARGET): $($(MODULE)_OBJECTSX)
+	@mkdir -p $(BUILDDIR)
+	ar -r $@ $?
+endif
+ifeq ($($(MODULE)_OUTPUT),exec)
+$(MODULE)_TARGET:=$(BUILDDIR)$(MODULE)$(EXE_SUFFIX)
+$($(MODULE)_TARGET): LDFLAGS:=$(G_LDFLAGS)
+$($(MODULE)_TARGET): LDFLAGS+=$($(MODULE)_LIBDIRSX)
+$($(MODULE)_TARGET): LDFLAGS+=$($(MODULE)_EXTLIBSX)
+$($(MODULE)_TARGET): $($(MODULE)_OBJECTSX) $($(MODULE)_OBJDEPSX) $($(MODULE)_LIBDEPSX)
+	$(CXX) -o $@ $(LDFLAGS) $^
+endif
+ifeq ($($(MODULE)_WHEN),all)
+$(MODULE)-build: $($(MODULE)_TARGET)
+endif
+$(MODULE)-clean::
+	$(RM) $($(subst -clean,,$@)_TARGET)
+
+build: $(MODULE)-build
+$(LOC)build: $(MODULE)-build
+endif
+$($(MODULE)_OBJECTSX): CXXFLAGS:=$(G_CXXFLAGS)
+$($(MODULE)_OBJECTSX): CFLAGS:=$(G_CFLAGS)
+$($(MODULE)_OBJECTSX): CXXFLAGS+=$(G_OPTIM) $($(MODULE)_CXXFLAGS)
+$($(MODULE)_OBJECTSX): CXXFLAGS+=$(addprefix -I,$(G_HDRS) $($(MODULE)_HDRS))
+$($(MODULE)_OBJECTSX): CFLAGS+=$(G_OPTIM) $($(MODULE)_CFLAGS)
+$($(MODULE)_OBJECTSX): CFLAGS+=$(addprefix -I,$(G_HDRS) $($(MODULE)_HDRS))
+$(BUILDDIR)$($(MODULE)_LOC)%.o: $($(MODULE)_LOC)%.c
+	$(CC) $(CFLAGS) $(CDEPFLAGS) -c -o $@ $<
+
+$(BUILDDIR)$($(MODULE)_LOC)%.o: $($(MODULE)_LOC)%.cc
+	$(CXX) $(CXXFLAGS) $(CXXDEPFLAGS) -c -o $@ $<
+
+#$($(MODULE)_OBJECTSX): $($(MODULE)_LOC)/Makefile $(TOP)/bs/Make.subdir $(TOP)/Makefile $(TOP)/bs/Make.main
+# This line fails to do anything useful.
+#$($(MODULE)_OBJECTSX): VPATH+=$($(MODULE)_LOC)
+# It's roughly the same as:
+#$(MODULE)ALLSOURCE:=$(patsubst %,$(BUILDDIR)%,$($(MODULE)_CSOURCESX))
+#$(MODULE)ALLSOURCE:=$(patsubst %,$(BUILDDIR)%,$($(MODULE)_CXXSOURCESX))
+#VPATH+=$($(MODULE)_LOC)
+#$($(MODULE)_OBJECTSX): $(BUILDDIR)$($(MODULE)_LOC)/stamp
+$(MODULE)-build:
+.PHONY: $(MODULE)-build
+
+$(BUILDDIR)$($(MODULE)_LOC)/stamp:
+	-mkdir -p $(dir $@)
+	touch $@
+#TMP=$(foreach thing,$($(MODULE)_OBJECTSX),$(call SetModuleDep $(thing),$(MODULE)))
+
+$(MODULE)-clean::
+	$(RM) $($(subst -clean,,$@)_OBJECTSX)
+$(LOC)clean:: $(MODULE)-clean
+clean:: $(LOC)clean
+
+$(MODULE)-check:
+	@echo $(subst -check,,$@)
+	@echo $(subst -check,,$@), $($(subst -check,,$@)_CXXSOURCES)
+	@echo $(subst -check,,$@), $($(subst -check,,$@)_OBJECTSX)
+	@echo $(subst -check,,$@), $($(subst -check,,$@)_OUTPUT)
+	@echo $(subst -check,,$@), $($(subst -check,,$@)_LOC), $(TOP)
+	@echo $(subst -check,,$@), $($(subst -check,,$@)_LIBDEPSX)
+	@echo $(subst -check,,$@), $($(subst -check,,$@)_EXTLIBSX)
+endif
+
+# SubMakes
+SUBDIRS:=$(SUBDIRS)
+XSUBDIRS:=$(SUBDIRS)
+XINCSUBMAKES:=$(patsubst %,$(BUILDDIR)$(LOC)%/Make.sub,$(XSUBDIRS))
+#$(patsubst %,$(LOC)/%/Make.sub,$(wilcard */Makefile))
+
+$(LOC)build: $(patsubst %,$(LOC)%/build,$(XSUBDIRS))
+$(LOC)clean:: $(patsubst %,$(LOC)%/clean,$(XSUBDIRS))
+$(LOC)install:: $(patsubst %,$(LOC)%/install,$(XSUBDIRS))
+
+noop:
+
+$(LOC)check:
+	echo $(LOC)
+	echo Subdirs: $(XSUBDIRS)
+	echo Submakes: $(XINCSUBMAKES)
+
+distclean:: $(LOC)rmmk
+
+$(LOC)rmmk: THINGS:=$(XINCSUBMAKES)
+$(LOC)rmmk:
+	@$(RM) $(THINGS)
+
+include $(XINCSUBMAKES)

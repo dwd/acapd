@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/4/projects/infotrope/acapd/src/impl/tests
+END
+string-int-test.cc
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/!svn/ver/4/projects/infotrope/acapd/src/impl/tests/string-int-test.cc
+END
+bdb.cc
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/4/projects/infotrope/acapd/src/impl/tests/bdb.cc
+END

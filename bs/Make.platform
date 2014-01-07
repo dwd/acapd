@@ -1,0 +1,5 @@
+# We should do cunning platform preconfiguration here.
+
+CXXDEPFLAGS=-MD -MF $(patsubst %.o,%.d,$@)
+CDEPFLAGS=-MD -MF $(patsubst %.o,%.d,$@)
+

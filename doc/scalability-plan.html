@@ -1,0 +1,26 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>Scalability Plan</title>
+  </head>
+
+  <body>
+    <h1>Scalability Plan</h1>
+
+    <p>Okay. Here's the plan.</p>
+    <p>A little while ago, I put in the notion of the requested subcontext, which holds the data actually requested to be there. From this, the overlay (noinherit) and normal subcontexts are built (hoorah.)</p>
+    <p>So my aim is to drop the latter two, so that those are built on the fly, on demand. We maintain a list somewhere of <i>configurable</i> entries held in memory, to cut load-in costs.</p>
+    <p>Then, we shift the values into bdb - these are, by far, the chunkiest bits of memory.</p>
+    <p>Then, the datasets themselves get shifted, probably as ordered clouds of attributes.</p>
+    <p>Finally, we handle the datastore itself by heirarchical searches through the datasets - actually this could be done first - and attempt to drop the paths inside the datasets.</p>
+    <p>Overall, this should mean that the data is held on BDB, and actually transactionally controlled by it, but also we still use the advantages of the in-memory processing - namely speed.</p>
+    <p>For smallish systems, it shouldn't impact at all.</p>
+
+    <hr>
+    <address><a href="mailto:dwd@peirce.gestalt.entity.net">Dave Cridland</a></address>
+<!-- Created: Mon Nov 29 23:07:52 GMT 2004 -->
+<!-- hhmts start -->
+Last modified: Mon Nov 29 23:14:41 GMT 2004
+<!-- hhmts end -->
+  </body>
+</html>

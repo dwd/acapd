@@ -1,0 +1,24 @@
+ACLS
+====
+
+Use Cases:
+
+1) No inheritance:
+
+Generally, want datasets with no inheritance to have $owner rights in full.
+
+2) Inherited, writable:
+
+$owner rwix
+
+Specifically, we want to have all rights other than a where rights are granted.
+
+
+--
+
+Thought:
+
+How about tying rights tightly to a value? This would suggest that storing an ACL on an attribute which is not overridden would be rights-checked on the ACL in effect in the parent, not in the local, thus preventing the ACL stuff.
+
+Hmmm...
+

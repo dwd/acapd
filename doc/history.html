@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>History</title>
+  </head>
+
+  <body>
+    <h1>History</h1>
+
+    <p>A nice chap, whom I've known for years, quite inadvertantly started me off on this. He's a chap called John Root, giving him endless fun when it comes to selecting account names for him. He's apparently no relation of Enoch, but there we go.</p>
+    <p>Many moons past, he used to frequent a telnet-based BBS of mine. More recently, he started running one of his own, a deeply secretive BBS, and ran one of the GPL clones of the DOC/YAWC/etc systems that used to be popular sometime back in the 90's.</p>
+    <p>I thought it might be interesting to write one, given that my own code had rotted to the point where I couldn't stop giggling when I read through it. (To be fair, there were a lot of bad choices I made.) I decided that the easiest thing to do would be to write something which used standard protocols to handle the messaging as much as possible, so I wrote a very simple shell which acted as a client to IMAP and ACAP, and as a server for TELNET. ACAP, just because I knew of it, and figured it'd be the best choice. When I came to finding an ACAP server, it turned out my choices were limited. I couldn't use the Communigate Pro one, as I really wasn't sure what it was really doing, and there was amazingly little documentation about it. Besides, it was proprietory, and while I'm not a rabid fanatic, I do prefer my software to come with the source, in case I need to change it, and so that I know people cleverer than me have probably scanned it for stupid things.</p>
+    <p>The only other ACAP server was Cyrus SMLAcapd - I found ti a little odd to work with, and I was mildly fustrated by the way it batched up the notifications from the server for 30 seconds or so, essentially forcing me to poll for them.</p>
+    <p>So, I decided, hey, how hard can it be? And started writing my own. The first attempt tried using SQL as a backend - it sounds like an excellent idea, until you try handling data inheritance in SQL. You rapidly discover that the structure of SQL turns out to be an impediment, rather than an advantage. I battled on, until I figured out that the comparators in ACAP really don't map in any useful way to SQL. At this point, I gave up.</p>
+    <p>At roughly this point, I met Alexey Melnikov - again, a nice chap - who suggested, in the pub, that what I ought to try was writing the whole thing in-memory, which'd get a useful working server, and also lots of experience in what was really needed as regards the backend storage. At the same time, my family and I moved to Wales, and I got cut off from the net as I commuted weekly back and forth from London. In one two-week stay in Wales, I wrote the key code to handle the original command dispatcher, the datastore itself, and inheritance.</p>
+    <p>Over a period of around six months, I wrote the rest up until the first release, sometime around a year ago. I skipped the difficult choices around backends, using instead Alexey's ADIF XML format.</p>
+    <p>Since then, although I've done some work with the code, I've largely been working on trying to solve the backend storage problem. I've tried several different methods, but either they turned out to be very slow (mainly due to having to load in the data - the current implementation caches a huge amount of data, and ACAP's attributes, being potentially one of four types, take a not insignificant amount of time to parse), or else they turned out to be entirely unworkable (such as the initially very encouraging tactic of using mmap()ed files. It worked fine if I fixed the location, but if I wanted the location to be detirmined by mmap() itself, I had to use smart pointers that were then incompatible with the STL, meaning I had to rewrite much of that.).</p>
+    <p>This code is actually a forward-port of the existing in-memory server to the server structure I intended to use with the BDB backended code.</p>
+    
+    <h3>Why ACAP at all?</h3>
+    <p>There are several possible protocols and methods for storing configuration. In fact, there's so many of them, it's hard to know where to begin. Even protocols such as HTTP have been used for configuration data - okay, fair enough, HTTP has been used for almost everything. ACAP is unique in the space because it's specifically designed for the job in hand - nothing else is. FOr me, the key things it does are:</p>
+    <dl>
+      <dt>Data Inheritance</dt>
+      <dd>John and Alexey are both using the same configuration server. The administrator sets up default options for them both. John and Alexey can now override those options with their own if they choose - if they don't, and the administrator changes the options, they'll change in John and Alexey's settings.</dd>
+      <dt>Server-push notifications</dt>
+      <dd>John runs two clients, one at home, one at work, using the same configuration server, and the same options. John changes his options at work. They are instantly changed at home, without the client at home having to poll for changed options.</dd>
+      <dt>Heirarchical structures, mapped to different ones</dt>
+      <dd>Alexey too has two clients, one at home, and one at work. They don't share the same options, but have some in common. Let's pick a concrete example - bookmarks. In his work web-browser, he could have a submenu in his Bookmarks menu called Home Bookmarks, which simply point to his home bookmarks. And vice-versa. (Although if the home and work clients use different servers, the clients have to be careful about infinite loops, there.)</dd>
+      <dt>No schemas</dt>
+      <dd>Got some options to store that don't map to standard ones? No problem. Just bung them in anyway, using a vendor prefix. Even your addressbook entries, say, can contain extra information that only your client can understand, and it won't interfere with anything another client does. I'm thinking of using this to handle the default reply type for mailing lists.</dd>
+      <dt>Automatic modification time stamping</dt>
+      <dd>Modification times are part of the protocol, not an addition, so they're impossible to get around.</dd>
+      <dt>Very fine grained ACLs</dt>
+      <dd>ACAP makes sharing data between users and even organisations very easy. The fine grained nature of the ACLs allows the administrator or user to be very picky indeed about what data to share to whom.</dd>
+      <dt>Makes tea automatically</dt>
+      <dd>Well, not actually. But almost.</dd>
+    </dl>
+    <p>To give you some idea, I hold the view that any data storage/access protocol can be mapped to ACAP. Not that this is actually a good idea.</p>
+    <hr>
+    <address><a href="mailto:dave@cridland.net">Dave Cridland</a></address>
+<!-- Created: Mon Mar 29 10:36:33 BST 2004 -->
+<!-- hhmts start -->
+Last modified: Mon Mar 29 11:37:17 BST 2004
+<!-- hhmts end -->
+  </body>
+</html>

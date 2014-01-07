@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>Bootstrapping</title>
+  </head>
+
+  <body>
+    <h1>Bootstrapping</h1>
+
+    <p>The server should, on startup, bind itself to port 674, on ipv6 if available, and ipv4 if not. If both fail, it'll open a different socket, erm, somewhere. Originally, it tried UNIX domain sockets, but I never got around to writing the utilities that would make this useful.</p>
+    
+    <p>Erm. Look, you probably just want to email me, and say "Oi! Write the bleeding docs!".</p>
+    
+    <p>But basically, it'll use SASL defaults, until you stick stuff in /vendor.infotrope.acapd/site/sasl/ telling it not to.</p>
+    
+    <p>Loosely, these mean that you'll need to create a SASL user called "admin" in the /etc/sasldb2 for now, and login using telnet in order to make everything work the way you want.</p>
+    
+    <p>For example, to look at the default configuration, and tweak the SASL configuration, do:<pre>
+$ <b>su -</b>
+# <b>saslpasswd2 admin</b>
+Password: <b>xxx</b>
+Again (for verification): <b>xxx</b>
+$ telnet localhost 674
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+* ACAP (IMPLEMENTATION "Infotrope ACAP Server, version 0.1.3, Copyright 2002-2004 Dave Cridland &lt;dave@cridland.net&gt;") (SASL "NTLM" "LOGIN" "CRAM-MD5" "PLAIN" "DIGEST-MD5" "ANONYMOUS") (XUNIQUE) (STARTTLS)
+<b>. AUTHENTICATE "LOGIN"</b>
++ {9}
+Username:
+<b>"admin"</b>
++ {9}
+Password:
+<b>"xxx"</b>
+. OK "You're logged in as admin. Frooby."
+<b>. SEARCH "/vendor.infotrope.acapd/site/" DEPTH 0 RETURN ("*") ALL</b> <i>// Scan current config</i>
+. ENTRY "" (("dataset.acl" ("$owner     rwixa")) ("modtime" "20040927143240007") ("entry" ""))
+. ENTRY "fallback" (("modtime" "20040927143240050") ("entry" "fallback") ("vendor.infotrope.acapd.transport.address" "674") ("vendor.infotrope.acapd.transport.family" "tcp") ("vendor.infotrope.acapd.network.family" "ipv6") ("vendor.infotrope.acapd.network.address" "::0"))<i> // This is the fallback listening socket it's using - it's the one it decided to use in the absence of any other.</i>
+. MODTIME "20040929094321000"
+. OK "From 1096451001.955727 to 1096451001.975130 - Search took 19ms."
+<b>. STORE ("/vendor.infotrope.acapd/site/sasl/log_level" "vendor.infotrope.acapd.value" "9")</b> <i>// Set SASL log_level to 9 (max)</i>
+<b>. STORE ("/vendor.infotrope.acapd/site/sasl/pwcheck_method" "vendor.infotrope.acapd.value" "saslauthd auxprop") ("/vendor.infotrope.acapd/site/sasl/auxprop_plugin" "vendor.infotrope.acapd.value" "sasldb")</b> <i>// Use Cyrus SASL Authd and auxprop for passwords, use only sasldb for auxprop requests, making both these changes atomically (both or neither)</i>
+<b>. STORE ("/vendor.infotrope.acapd/site/sasl/DIGEST-MD5/reauth_timeout" "vendor.infotrope.acapd.value" "5")</b> <i>// Let DIGEST-MD5 cache authentications, for faster reauthentication, for 5 minutes.</i>
+<b>. STORE ("/vendor.infotrope.acapd/site/high-port" "vendor.infotrope.acapd.network.family" "ipv4" "vendor.infotrope.acapd.network.address" "0.0.0.0" "vendor.infotrope.acapd.transport.family" "tcp" "vendor.infotrope.acapd.transport.address" "9000")</b><i> // Listen to port 9000 on INADDR_ANY.</i>
+</pre></p>
+    
+    <h2>Running as an ordinary user</h2>
+    
+    <p>As long as the ordinary user can access the SASL files, this will work. I do testing by chmod 0666 /etc/sasldb and running it with my normal user. However, you'd be barking mad to do this in production.</p>
+
+    <hr>
+    <address><a href="mailto:dave@cridland.net">Dave Cridland</a></address>
+<!-- Created: Tue Aug 10 16:48:04 BST 2004 -->
+<!-- hhmts start -->
+Last modified: Tue Nov 30 10:36:33 GMT 2004
+<!-- hhmts end -->
+  </body>
+</html>

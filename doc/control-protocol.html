@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>Infotrope Control Protocol Specification</title>
+  </head>
+
+  <body>
+    <h1>Infotrope Control Protocol Specification</h1>
+
+    <p>This document describes the internal control protocol between the meta server and the actual ACAP server. It's only spoken across a socketpair, thus security wasn't any kind of concern, and extensibility was not a goal.</p>
+    
+    <p>The protocol is line orientated, and violently simplistic. It's very easy to abuse.</p>
+    
+    <p>Every message begins with a single octet command name, and a space. The rest of the line depends on what the command name was, and I'll call the the payload:</p>
+    
+    <p><code>
+	line = command SP payload LF
+	command = %x00-FF
+	text-char = ; Pretty much any printable ASCII character.
+	num-char = "0"-"9"
+      </code></p>
+    
+    <p>Some commands will be sent expecting a nearly instant response - where this is the case, the real ACAP server thread that sent the command will be blocking. In general, this'll be the Master-helper thread, so during the CP call, sockets won't get closed. Worst case - where the metaserver fails to provide a return code - is that the real server doesn't close connections.</p>
+    
+    <p>In practise, a command is always an upper-case character. Commands currently include:</p>
+    
+    <dl>
+      <dt>L</dt>
+      <dd><p>Log</p>
+	<p><code>
+	    log-payload = log-pri SP *( text-char )
+	    log-pri = num-char
+	  </code></p>
+	<p>Logs via whatever logging mechanism we have, at this priority. This really means syslog, or would if I got around to it.</p>
+      </dd>
+      <dt>E</dt>
+      <dd><p>Fatal Error</p>
+	<p><code>
+	    fatal-payload = *( text-char )
+	    </code></p>
+	<p>Also logs, but also exits the metaserver when the child process quits. This is used for unrecoverable errors - such as when the ACAP server cannot actually start up properly - where a restart won't work. Think of it as a warning that the child's about to crash.</p>
+      </dd>
+      <dt>S</dt>
+      <dd><p>Socket Request</p>
+	<p><code>
+	    socket-payload = family SP family-specific
+	    family = 1*(num-char)
+	    ; Denote the address family. Note that the type we want is always SOCK_STREAM.
+	    family-specific = ipv6-addrinfo / ipv4-addrinfo / unix-addrinfo
+	    unix-addrinfo = "unix" SP 1*( text-char )
+	    ipv4-addrinfo = "ipv4" SP ipv4-addr SP tcp-port
+	    ipv6-addrinfo = "ipv6" SP ipv6-addr SP tcp-port
+	    ipv4-addr = 1*3( num-char ) "." 1*3( num-char ) "." 1*3( num-char ) "." 1*3( num-char )
+	    ; ipv4 dotted-quad notation address, possibly "0.0.0.0" for INADDR_ANY
+	    tcp-port = 1*5( num-char ) "/" tcp
+	    ; TCP port address.
+	    ipv6-addr = 1*( num-char / ":" )
+	    ; dead::beef notation IPv6 address.
+	  </code></p>
+	<p>Requests the metaserver to listen to this IP address, and pass the socket back to the caller via an Ancillary Message of type SCM_RIGHTS. Remember that the real ACAP server runs as a non-priveleged user, and thus cannot do this for itself. It also has the benefit that on restart, the metaserver simply hands across existing listening sockets.</p>
+	<p>Right now, incidentally, only ipv4 works.</p>
+      </dd>
+    </dl>
+    
+    <hr>
+    <address><a href="mailto:dave@cridland.net">Dave Cridland</a></address>
+<!-- Created: Mon Jan 12 14:13:17 GMT 2004 -->
+<!-- hhmts start -->
+Last modified: Wed Feb  4 18:11:33 GMT 2004
+<!-- hhmts end -->
+  </body>
+</html>

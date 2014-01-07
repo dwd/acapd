@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>Extensions We Do Stuff With</title>
+  </head>
+
+  <body>
+    <h1>Extensions We Do Stuff With</h1>
+
+    <p>The Infotrope ACAP Server has a handful of extensions. Don't rely on these unless, erm, well, you're me, really. And you're not. I can tell, you know.</p>
+    
+    <p>On a more serious note, most of these extensions are somewhat subject to change. Sling a post on the mailing list if you're thinking of using any of them, and that way I'll know about your needs as well as mine.</p>
+    
+    <h3>Extensions</h3>
+    
+    <dl>
+      <dt>XFOLLOW</dt>
+      <dd>
+	<p>A search modifier, with one Atom afterwards. Either LOCAL or IMMEDIATE is supported. Essentially you're telling the ACAP server what to follow when you specify DEPTH!=1. IMMEDIATE follows all datasets located immediately below the entry it's looking at, whereas LOCAL follows any on the same server.</p>
+	<p>In general, you want the default, which is IMMEDIATE. This will generate, during a SEARCH, REFER intermediate responses telling you where to find the dataset, and allows the client to track depth. You needn't wait for the first search to finish before sending your additional searches, on any ACAP server, and on Infotrope, it'll fire them off immediately. It's especially useful to do this if you're creating a heirarchical representation of the dataset structure in your client, since it allows the client to tell where the data actually is.</p>
+	<p>The alternative, LOCAL, will continue the search all over the server, tracking loops for you, etc. In particular, this is useful for addressbook searches and other searches where you don't care quite so much about the structure, just the data. Soup versus heirarchy, kind of thing.</p>
+	<p>As a final note, the syntax actually includes a REMOTE, too, which will generate an error, since the ACAP server has no client as yet. Besides which, I'm really not at all sure how that might work.</p>
+      </dd>
+      
+      <dt>XUNIQUE</dt>
+      <dd>
+	<p>A store-list modifier. Basically, it interprets the entry path portion of the store list as an entry path prefix, and will tack on stuff such that the entry is newly created. It'll then return you the entry name in an ENTRY intermediate response. Helpful, eh?</p>
+	<p>The Infotrope ACAP Server implements this by tacking on the MODTIME, and if this fails, generating a new MODTIME until it succeeds.</p>
+      </dd>
+      
+      <dt>XRANGE-NIL-MODTIME</dt>
+      <dd>
+	<p>Allows you to specify a modtime of NIL to RANGE search criteria, which in turn means "Look, I couldn't give a frigging monkey's when this context changed. I wanna see the range anyway."</p>
+	<p>Or, in less technical speak, the server will ignore the Modtime argument, and not perform any MODTIME checks on the context you're searching.</p>
+      </dd>
+      
+      <dt>XPERSIST</dt>
+      <dd>
+	<p>A replacement for DELETEDSINCE, which actually works, requires less 'brains' on the client, and does exactly what you need for resynchronizing offline caches.</p>
+	<p>Basically: Say "A01 XSESSION" at a server. It'll send back A01 XSESSION "some opaque quoted string", and a tagged OK. Make any contexts you like, but specify "XPERSIST" after MAKECONTEXT if you want them to persist.</p>
+	<p>Log out. Let time pass.</p>
+	<p>Now reconnect and log in again. Say A01 XSESSION "some opaque quoted string" - note that this time, you're providing an argument. The server will give you an XSESSION intermediate response, which may or may not have the same quoted string, and a tagged OK if it's the same, and a tagged NO if it's not, with some kind of reason.</p>
+	<p>Those contexts that you made persistent will send you all the tagged responses to bring your client up to date, at some point. It's probably worthwhile performing an "UPDATECONTEXT" command for each of them.</p>
+	<p>Finally, note that there's no requirement for the server to keep your sessions about if it doesn't feel like it, so this has to be the simplest extension in the world to support - basic minimal support simply means responding to XSESSION with a new session identifier, and issuing NO if there was an argument.</p>
+	<p>Compare and contrast with DELETEDSINCE, which is not only not supported by any server in existence, but also requires a lot more smarts on the client to deal with resolving the changes. Oh, and a real smart gotcha, if a dataset is renamed, then the modtimes on the entries within are not updated. So you've got to track that seperately.</p>
+      </dd>
+    </dl>
+
+    <hr>
+    <address><a href="mailto:dave@cridland.net">Dave Cridland</a></address>
+<!-- Created: Fri Apr 16 11:34:53 BST 2004 -->
+<!-- hhmts start -->
+Last modified: Sat Apr 17 10:28:09 BST 2004
+<!-- hhmts end -->
+  </body>
+</html>

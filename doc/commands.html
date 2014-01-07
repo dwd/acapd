@@ -1,0 +1,47 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>Writing Commands</title>
+  </head>
+
+  <body>
+    <h1>Writing Commands</h1>
+    <p>The ACAP Server uses a relatively simple framework for writing commands. Each command is simply a class, inheriting from Infotrope::Server::Command, and needs to implement at least two functions, as well as a constructor.</p>
+    <p>The commands needn't be linked publically - all the included commands are written in an anonymous namespace to prevent pollution, in fact - you just need to register the class, and which scope it needs to operate in.</p>
+    <dl>
+      <dt>Constructor - &lt;class name&gt;( Server::Worker & )</dt>
+      <dd>
+	<p>Aside from your own construction (which can be quite lengthy, or can be virtually nothing), you must call the base constructor for Server::Command. There are two arguments, a boolean value, indicating whether your command should run synchronously (true), or as a seperate thread (false), and you'll need to pass on the single argument you get, which is the controlling Server::Worker.</p>
+	<p>Your own construction should really be limited to defaulting and initializing your fields - don't hit the datastore at this point, as your command is not running yet.</p>
+	<p>A key thing about the synch stuff - by declaring your command as one that may run asynchronously, you're not enforcing that it will be. Two commands with the same tag will force the second (at least) to be run synchronously, whether or not it's capable of asynchronous operation.</p>
+      </dd>
+      <dt>internal_parse - void internal_parse( bool complete )</dt>
+      <dd>
+	<p>The internal_parse function parses the current protocol "line" (which can actually be multiple lines), and is called after each EOL received by the Worker. The current protocol line is held in m_toks, and will contain a Literal Marker somewhere unless complete is true.</p>
+	<p>Again, your command isn't running yet, so don't hit the datastore, or cause anything to lock the Worker. (Basically, don't call the Worker...). The function returns void - you'll need to throw an exception (typically, std::runtime_error), in order to generate a BAD response and a suitable error message. In general, you really do very basic syntax checking, possibly checking whether something you expect to be a Path is, in fact, a valid path. (By contrsucting a path around a string.)</p>
+	<p>There's no easy way to find out where the Literal Marker is other than looking for it. As a general rule, just check for isString() and isLiteralMarker(), performing Path checks on isString() only.</p>
+	<p>Currently, internal_parse is treated as if it were const qualified - I suspect it'd be safe to actually change your command's parameters directly from here.</p>
+	<p>The point of this, incidentally, is to allow your command to reject its arguments before a literal is sent. With a synchronous literal - '{123}' - this means the client will never get a '+ "Go Ahead"' message. With a non-synch literal - '{123+}', the literal will be spooled through rather than actually loaded into memory.</p>
+      </dd>
+      <dt>main - void main()</dt>
+      <dd>
+	<p>Once your command syntax is validated, and the protocol line is complete, the Worker will execute it. Server::Command will call your main function either synchronously or by spawning a seperate thread to take care of it. The only thing you need to remember to do in here is that you MUST either throw an exception, or else send a tagged OK reponse. If your function returns normally, Server::Command will assume you've sent a tagged OK.</p>
+	<p>Assuming you've parsed everything in internal_parse for syntax checking, you should be able to just use the tokens in m_toks - if you've missed something, though, you'll simply generate an exception, which'll send (relatively) cryptic messages to the client, probably tagged BAD responses.</p>
+      </dd>
+      <dt>feed_internal - bool feed_internal()</dt>
+      <dd>
+	<p>In the case of AUTHENTICATE, and probably only AUTHENTICATE, your command may need to enter into some kind of exchange with the client. This is handled by telling the Worker that you want to be fed - essentially taking over the parsing of data from the command dispatcher - and then getting fed until you tell it to stop.</p>
+	<p>Predictably, given that AUTHENTICATE is the only thing that uses this, this is entirely undocumented. If you're trying to replace my AUTHENTICATE (which uses the SASL C API) with another (GNU SASL?), then you'll need to read through the source yourself in much detail, trying to figure out what was going through my head when I wrote it.</p>
+	<p>In most cases, you'd be doing the community as a whole much more benefit to simply ensure your SASL API conforms to the SASL C API, since then it'll be directly supported by a sizable number of applications out of the box.</p>
+	<p>If you're trying to write some other command which uses the feeding mechanism, then I'd strongly advise against it - AUTHENTICATE needs very special handling in both client and server as it is.</p>
+      </dd>
+    </dl>
+    
+    <hr>
+    <address><a href="mailto:dave@cridland.net">Dave Cridland</a></address>
+<!-- Created: Mon Mar 29 09:42:35 BST 2004 -->
+<!-- hhmts start -->
+Last modified: Wed Sep 29 10:34:33 BST 2004
+<!-- hhmts end -->
+  </body>
+</html>

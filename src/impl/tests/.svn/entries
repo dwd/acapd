@@ -1,0 +1,52 @@
+8
+
+dir
+774
+http://svn.dave.cridland.net/svn/projects/infotrope/acapd/src/impl/tests
+http://svn.dave.cridland.net/svn
+
+
+
+2004-04-15T08:42:47.389800Z
+4
+dwd
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+a49812e5-16d8-0310-aa59-abe23cd2aeec
+
+string-int-test.cc
+file
+
+
+
+
+2007-09-14T13:04:51.000000Z
+6495620e151139a7c6624eae88798d1f
+2004-04-15T08:42:47.389800Z
+4
+dwd
+
+bdb.cc
+file
+
+
+
+
+2007-09-14T13:04:51.000000Z
+e5ad8c9f630a9d4dc2c8e399ff8b6d2d
+2004-04-15T08:42:47.389800Z
+4
+dwd
+

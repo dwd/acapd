@@ -1,0 +1,41 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>Infotrope ACAP Server Documentation</title>
+  </head>
+
+  <body>
+    <h1>Infotrope ACAP Server Documentation</h1>
+    <p>Hi. Welcome to the documentation, such as it is.</p>
+    <p>Please read it carefully, and test the results carefully - I really can't promise that there aren't bugs in the documentation, or the server. I can't, I'm afraid, test everything.</p>
+    <p>There are gaping holes and missing pages in this documentation. Feel absolutely, 100%, totally free to email <a href="mailto:dave@cridland.net">me</a> and ask questions. (Or the list, at <a href="mailto:infotrope@clues.ltd.uk">infotrope@clues.ltd.uk</a>).</p>
+    <h3>Contents</h3>
+    <dl>
+      <dt><a href="building.html">Building, Compiling, etc</a></dt>
+      <dd><p>Hopefully describes how to get an installed executable from the funny text stuff in the tarball.</p></dd>
+      <dt><a href="bootstrap.html">Bootstrapping</a></dt>
+      <dd><p>One of the aesthetic problems of writing a configuration server - where do you stick the configuration? In itself, of course. Which does make life very interesting when you're starting it up for the first time.</p></dd>
+      <dt><a href="configuration.html">Configuration</a></dt>
+      <dd><p>Once the ACAP server is running, you'll need to configure it a bit. This includes configuring it to listen on the standard ACAP port. Some SASL (Authentication) configuration is discussed here, along with pointers to more.</p></dd>
+      <dt><a href="history.html">History</a></dt>
+      <dd><p>A brief history of why I've written the server at all, and why it's written the way it is.</p></dd>
+    </dl>
+    <h3>Development Documentation</h3>
+    <p>I've tried to write down what I'm doing, and in some cases, why. Hopefully this should explain it all.</p>
+    <dl>
+      <dt><a href="server-structure.html">Server Structure</a></dt>
+      <dd><p>Two processes, one single thread and tightly coded, one large multithread and defensively coded. This document explains what they do.</p></dd>
+      <dt><a href="control-protocol.html">Control Protocol</a></dt>
+      <dd><p>That process called <i>acapd</i> doesn't speak ACAP at all - that would increase its complexity too high for me to consider it safe to run as root, realistically. Instead it runs a very simple control protocol.</p></dd>
+      <dt><a href="commands.html">Commands, and how to write them</a></dt>
+      <dd><p>A technical overview of commands.</p></dd>
+    </dl>
+
+    <hr>
+    <address><a href="mailto:dave@cridland.net">Dave Cridland</a></address>
+<!-- Created: Mon Mar 29 10:08:00 BST 2004 -->
+<!-- hhmts start -->
+Last modified: Tue Nov 30 10:31:03 GMT 2004
+<!-- hhmts end -->
+  </body>
+</html>

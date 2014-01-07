@@ -1,0 +1,8 @@
+AT:=$(shell pwd)
+
+local:
+	@$(MAKE) -C $(RTOP) local-build AT=$(AT)
+install:
+	@$(MAKE) -C $(RTOP) local-install AT=$(AT)
+clean:
+	@$(MAKE) -C $(RTOP) local-clean AT=$(AT)

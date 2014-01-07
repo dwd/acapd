@@ -1,0 +1,40 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>Building, Compiling, etc</title>
+  </head>
+
+  <body>
+    <h1>Building, Compiling, etc</h1>
+    
+    <p><b>The best way of obtaining the source and building is via Subversion: <tt>svn co http://217.155.137.62/svn/projects/infotrope/acapd/</tt> - I don't bother with releases all that often, primarily because hardly anyone else has shown interest. Sorry. Show me interest, and I'll show you a release. :-)</b></p>
+
+    <p>You should be able to get away with "make" in most cases. Failing that, try "make config help", read, learn, inwardly digest, then run ./configure with suitable options, and rerun make.</p>
+    
+    <p>Prerequisites:</p>
+    <dl>
+      <dt>Linux</dt>
+      <dd>Previous renditions did apparently compile on FreeBSD, but since 0.1.x, I doubt this is the case anymore. For better or worse, the company that employs me standardized on Linux as a server platform some time ago, and this server requires various non-portable features, and has implemented them only to operate on Linux.</dd>
+      <dt>Cyrus SASL</dt>
+      <dd>Required for authentication. Previous versions did make an attempt at an alternate SASL library, but this effort never got far, and has since been abandoned.</dd>
+      <dt>Expat</dt>
+      <dd>Yes, I know, I've been meaning to try it on libxml for a while.</dd>
+      <dt>Optional: OpenSSL</dt>
+      <dd>OpenSSL is required if you want RFC2595 support. Some, possibly even most, of the work involved to get it working with GNU TLS is also there, but untested.</dd>
+    </dl>
+    
+    <p>Once built, "make install" should put everything in more or less the right places.</p>
+    
+    <p>Debian users on x86 or amd64 can rejoice, for there are packages synched to unstable:<pre>
+deb http://dave.cridland.net/debian/ unstable main
+deb-src http://dave.cridland.net/debian/ unstable main
+</pre>. Just apt-get install infotrope-acapd.</p>
+
+    <hr>
+    <address><a href="mailto:dave@cridland.net">Dave Cridland</a></address>
+<!-- Created: Tue Aug 10 16:36:31 BST 2004 -->
+<!-- hhmts start -->
+Last modified: Tue Aug 10 16:47:47 BST 2004
+<!-- hhmts end -->
+  </body>
+</html>

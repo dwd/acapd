@@ -1,0 +1,82 @@
+# -*- Makefile -*-
+
+TOP=$(shell pwd)
+BS_PLATFORM:=$(shell uname -s)
+BS_SYSTEM:=$(shell uname -m)
+BUILDDIR:=$(BS_PLATFORM).$(BS_SYSTEM)/
+
+-include $(BUILDDIR)Make.config
+
+VPATH:=$(BUILDDIR)
+
+ifneq ($(TOP),.)
+
+# General rule setup.
+
+.PHONY: all build install
+
+all: build
+
+install:
+
+clean::
+distclean:: clean
+
+define SetDep
+$(1): $(2)
+endef
+
+define SetModuleDepOne
+$(1): $(3)+=$($(2)_$(3))
+endef
+
+define SetModuleDep
+$(1):
+	echo Hello: $(2)
+endef
+
+# Copy global variables to a safe space.
+G_HDRS:=$(HDRS)
+G_OPTIM:=$(OPTIM)
+G_CFLAGS:=$(CFLAGS)
+G_CXXFLAGS:=$(CXXFLAGS)
+G_LDFLAGS:=$(LDFLAGS)
+
+# SubMakes
+MASTER_INCSUBMAKES:=$(patsubst %,$(BUILDDIR)%/Make.sub,$(SUBDIRS))
+
+include bs/Make.clear
+
+distclean::
+	$(RM) $(MASTER_INCSUBMAKES)
+
+check::
+	echo Top: $(TOP)
+	echo Foo: $(FOO)
+
+include $(MASTER_INCSUBMAKES)
+
+$(BUILDDIR)%/Make.sub: %/Makefile $(TOP)/bs/Make.main
+	@-mkdir -p $(dir $@)
+	echo 'include $$(TOP)/bs/Make.clear' >$@
+	echo 'override LOC:=$(dir $<)' >>$@
+	echo 'include $<' >>$@
+	echo 'include $$(TOP)/bs/Make.subdir' >>$@
+
+ifdef AT
+local-build: $(subst $(TOP)/,,$(AT))/build
+local-clean: $(subst $(TOP)/,,$(AT))/clean
+local-install: $(subst $(TOP)/,,$(AT))/install
+endif
+
+endif
+
+distclean::
+	@$(RM) $(BUILDDIR)Make.config
+
+$(BUILDDIR)Make.config: $(BUILDDIR)empty bs/Make.platform
+	@cp bs/Make.platform $@
+
+$(BUILDDIR)empty:
+	@-mkdir -p $(dir $@)
+	@touch $@

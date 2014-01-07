@@ -1,0 +1,101 @@
+.TH acapd 8 "August 2004"
+.\" Copyright 2004 Dave Cridland
+.\" 
+.\" Licensed under the GNU General Public License, version 2,
+.\" or, at your discretion, any later version.
+.\" 
+.SH NAME
+acapd \- Infotrope ACAP Metaserver
+.SH SYNOPSIS
+.B acapd
+[
+.I options
+]
+
+.PP
+.SH DESCRIPTION
+.B acapd
+is the Infotrope ACAP Server, a reasonably fully conformant RFC2244
+server, with RFC2595 (STARTTLS) support, designed to handle lightweight
+configuration access across the network.
+
+This is not the real ACAP server, but a guardian process which launches and
+controls the acapd\-real binary found by default in /usr/lib/acapd/, resulting in fewer
+privaledges needed for the real server, as well as faster restart, etc.
+
+It does, however, respond to the usual signals in the way your expect \- in particular, SIGHUP shuts down the real server and relaunches it, SIGINT and SIGTERM shutdown the real server and then exit the process.
+
+The server as a whole is written with the intention that SIGKILL should be safe, although having to use it would indicate a bug of some kind, obviously.
+
+All configuration of the ACAP server itself is handled through ACAP, within a custom dataset.
+.PP
+.SH OPTIONS
+.TP 12
+.B \-\-program
+.I executable
+Select the binary to be run as the real ACAP server. This will be provided a control
+socket opened on fd 0, debuggers will have to be configured to avoid stdin as a result.
+
+This defaults to /usr/lib/acapd/acapd-real
+.TP 12
+.B \-\-datadir
+.I directory
+This argument is passes verbatim to the real server as \-\-datadir, and is used to control
+the data root of the server.
+
+This defaults to /var/lib/acap/
+.TP 12
+.B \-\-user
+.I username|uid
+Sets the username or uid to exec the real ACAP server as. This may not be root or 0.
+
+This defaults to acapd
+.TP 12
+.B \-\-group
+.I groupname|gid
+Sets the groupname or gid to exec the real ACAP server as. Again, this cannot be root,
+however it would normally be required to be a user with access to the SASL databases
+needed for authentication.
+
+This defaults to a groupname the same as the username, or a gid the same as the uid.
+.TP 12
+.B \-\-fork
+Fork and daemonize the metaserver as soon as it appears safe to do so, and before starting the real ACAP server.
+
+This option is on by default.
+.TP 12
+.B \-\-nofork
+Do not fork, remain in the foreground.
+
+This option is off by default.
+.TP 12
+.B \-\-log
+.I \-|syslog|filename
+Use the supplied argument as the log destination. This defaults to syslog, but you can switch it to a filename, or use stdout if \-\-nofork has been selected.
+.TP 12
+.B \-\-pidfile
+.I filename
+Write the pid fo the metaserver (used for signalling) to this filename.
+
+This defaults to /var/run/acapd.pid, if writable, or nothing if not.
+.TP 12
+.B \-\-once
+Only run the real server once, then exit if it dies. A debugging aid.
+.PD
+.SH DIAGNOSTICS
+In general, the logging should be verbose enough to explain what went wrong, if anything.
+.PP
+.SH FILES
+The metaserver itself uses no configuration, other than compiled in defaults, all of which may be overridden on the command line.
+.P
+The real server uses configuration found in its own dataset /vendor.infotrope.acapd/site/.
+.PP
+.SH BUGS
+There are probably huge numbers of bugs, but the intention is to restrict them to the actual server process, rather than this metaserver, hopefully making them recoverable.
+.P
+Documentation is largely very sucky indeed, feel free to contact the author for help if you need it, and feel even free\-er to give me a hand.
+.PP
+.SH SEE ALSO
+The Infotrope ACAP Server Administrator's Guide. (In HTML, either installed at the same time, or in the source tarball.)
+.SH AUTHOR
+The Infotrope ACAP Server, and associated bugs, were written by Dave Cridland <dave@cridland.net>, as was this manual page, such as it is.

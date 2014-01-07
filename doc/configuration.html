@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>Configuration</title>
+  </head>
+
+  <body>
+    <h1>Configuration</h1>
+    
+    <h2>Overview</h2>
+    
+    <p>Where does the configuration for a configuration server live? In itself, of course.</p>
+    <p>In fact, it lives in a dataset <b>/vendor.infotrope.acapd/site/</b>, which itself contains the internal ACAP server's configuration, and datasets for external libraries, such as SASL - in <b>/vendor.infotrope.acapd/site/sasl/</b>.</p>
+    
+    <h2>Default Configuration Overview</h2>
+    
+    <p>By default, the server listens to port 674 on ipv6 or ipv4. If this fails, it'll listen to port 1674, 2674, etc.</p>
+    
+    <p>It'll use default SASL configuration - that is, it'll act as if there were no SASL configuration present, which there isn't.</p>
+    
+    <p>It won't do STARTTLS. And it won't do auto-provisioning.</p>
+    
+    <p>All these configuration areas are visible through ACAP.</p>
+    
+    <h2>Configuration</h2>
+    
+    <h3>Listening</h3>
+    <p>Any entry in the main dataset which looks like a listen will be treated as one - the only special one is "fallback", which is automatically generated if the server is unable to listen to any other configured listeners.</p>
+    
+    <p>A listen should have the following attributes:</p>
+    <dl>
+      <dt>vendor.infotrope.acapd.network.family</dt>
+      <dd>The family, one of "ipv4", "ipv6", or "unix".</dd>
+      
+      <dt>vendor.infotrope.acapd.network.address</dt>
+      <dd>The network address, in traditional form. Hence for ipv4, it'll be dotted quad, for ipv6, it'll be dead::beef</dd>
+      
+      <dt>vendor.infotrope.acapd.transport.family</dt>
+      <dd>Ignored for UNIX. For ipv4 and ipv6, this must be "tcp".</dd>
+      
+      <dt>vendor.infotrope.acapd.transport.address</dt>
+      <dd>Ignored for anything but "tcp", for which this must be a port number in decimal.</dd>
+      
+    </dl>
+    
+    <p>Listen entries may be called anything - they can even clash with existing option entries, although that's not really recommended.</p>
+    
+    <h3>Simple Options</h3>
+    
+    <p>Options have a single attribute, "vendor.infotrope.acapd.value". All SASL options are simple options, as well as many ACAP server options.</p>
+    
+    <h4>Auto provisioning</h4>
+    
+    <p>If the value of the option "auth_provision" is "1", then attempted authenticate commands with PLAIN with a non-existent user will cause the creation of that user, with the supplied password. If an attempt at authetication with another mechanism fails because the user doesn't exist, it'll issue TRANSITION-NEEDED, which (should) cause the client to retry with PLAIN.</p>
+    
+    <p>If you're going to do this, make sure you're using auxprop/sasldb, and offer TLS.</p>
+    
+    <h4>TLS Configuration</h4>
+    
+    <p>For RFC2595 support, you'll need a single option "tls_certificate", with a value of a full path to the TLS certificate, in PEM format, with both public and private keys present. It's a bit naff, but enough to get it working.</p>
+    
+    <p>I'll eventually sort this one out.</p>
+    
+    <h4>Backup configuration</h4>
+    
+    <p>The server writes dump files whenever it has to create or delete (or rename) a dataset, and then 'appends' tran files to these when an entry is created, deleted, or changed. Additionally, it now writes out a dump file as well as a tran file after every ten transactions.</p>
+    
+    <p>By default, it'll keep 10 older dump files (and associated tran files) about, in case the last dump failed for some reason.</p>
+    
+    <p>"max-dump-files" will change this. Changing it to 0 is not recommended, as you'll delete the dump file immediately after writing, which would be stupid.</p>
+    
+    <p>The default, while not wholly sensible, isn't too bad. I'd set it at around 3.</p>
+    
+    <h4>SASL Configuration</h4>
+    
+    <p>It is highly recommended to either know what you're doing to an extreme level, or else, before tweaking SASL configuration, make absolutely certain you've backed up the data directory. (Just a 'cp' or 'tar' will do fine.)</p>
+    
+    <p>General SASL options are held in <b>/vendor.infotrope.acapd/site/sasl/</b>, and options for specific mechanisms (and possibly plugins) are held within subdatasets named after the plugin. So, for instance, the DIGEST-MD5 options are held within <b>/vendor.infotrope.acapd/site/sasl/DIGEST-MD5/</b>.</p>
+    
+    <p>You can change any of them, but some options may require a restart of the server to reinitialize SASL - killing the metaserver (or real server) with a HUP is enough to do this, although you can kill the real server with KILL just to show off stability if you like.</p>
+    
+    <p>The options available are listed at <a href='http://asg.web.cmu.edu/cyrus/download/sasl/options.html'>http://asg.web.cmu.edu/cyrus/download/sasl/options.html</a>.</p>
+    
+    <h2>Changing Configuration theough ACAP</h2>
+    
+    <p>See the example on the <a href='bootstrap.html'>Bootstrap</a> page.</p>
+
+    <hr>
+    <address><a href="mailto:dwd@peirce.gestalt.entity.net">Dave Cridland</a></address>
+<!-- Created: Wed Sep 29 10:34:46 BST 2004 -->
+<!-- hhmts start -->
+Last modified: Tue Nov 30 10:40:06 GMT 2004
+<!-- hhmts end -->
+  </body>
+</html>

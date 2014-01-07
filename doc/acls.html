@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>ACLs, groups, and users, oh my!</title>
+  </head>
+
+  <body>
+    <h1>ACLs, groups, and users, oh my!</h1>
+
+    <p>When ACAP was published, in 1997, ACLs were effectively restricted to users - group identifiers were deliberately left for a future standard. That standard never happened, although it exists in draft, and hence I've taken a liberty, and implemented a quick-and-dirty group system.</p>
+    
+    <p>Moreover, exactly how ACLs and inheritance were meant to interact was never really made clear enough - exactly how to mandate the non-existence of an entry is particularly difficult. I've done my best, and changed things several times.</p>
+    
+    <h3>Basic ACLs</h3>
+    
+    <p>There are a total of five rights in ACAP. You can Read, Write (which really means modify or override an existing value), Insert (which really means override NIL), Administer (meaning writing the ACL metadata, or a dataset.acl attribute), or Xearch. Sorry, search.</p>
+    
+    <p>You can apply an ACL to any attribute of any entry within the server, as long as you have the 'a' right, of course. ACLs can contain an arbitrary number of users and groups. What grouping system you use is [currently] handled by magic naming. Users and groups can both be negative, which essentially means you're revoking rights. The combination of applicable rights is handled very simply - you find all the rights that apply, and subtract all the negative rights that apply. So even if a user has hundreds of groups with rights, and is mentioned explicitly as well as having rights, a '-anyone rwixa' leaves that user with no rights at all.</p>
+    
+    <p>Whenever rights fail, the server attempts - in as much as is possible - to pretend the attribute in question does not exist.</p>
+    
+    <p>While ACLs on every individual attribute is nice, from a management perspective, it's useful to apply rights on both entries as a whole, and for all attributes of a particular name within a dataset, and for the dataset as a whole.</p>
+    
+    <p>Vertical rights - for an entry - are defined by applying an attribute on the entry. If you don't have rights to read the entry, it does not exist. If you don't have write rights, you can't perform any STORE to it.</p>
+    
+    <p>Horizontal rights - for all attributes of a certain name - get handled by the attribute "dataset.acl.attr-name" on the empty-string entry - so to assign default rights across all attributes named "test.value", you'd use "dataset.acl.test.value".</p>
+    
+    <p>Dataset-wide rights can be set using the "dataset.acl" attribute on the empty-string entry. These effectively apply as a fallback.</p>
+    
+    <p>Only one ACL may be in effect on a particular attribute. So if you deny "anonymous" any rights in "dataset.acl", you'll need to repeat that if you then want to assign "fred" some rights to some attribute.</p>
+    
+    <p>The exception to this is inheritance - all identifier/right pairs are considered, hence if /foo/~/ inherits from /foo/site/, and /foo/site//dataset.acl includes "-anyone rwxia", nobody gets any rights in /foo/~/ by default, no matter what /foo/~//dataset.acl has.</p>
+    
+    <h3>Special Identifiers</h3>
+    
+    <p>There are two special identifiers which begin with an alphanumeric character:</p>
+    <dl>
+      <dt>"anonymous"</dt><dd>applies to people logged in anonymously, as you'd expect.</dd>
+      <dt>"anyone"</dt><dd>applies to anyone - including anonymous users.</dd>
+    </dl>
+    
+    <h3>Groups</h3>
+    <p>Note that *all* group types are *all* supported simultaneously. Fun, eh?</p>
+    <p>Groups all begin with '/', as per the spec. The character that follows them identifies the scope. In the case where the character is alpha-numeric, the group is treated as an ACAP dataset path, examined to see if it is of class 'groupid', and, if so, the dataset it refers to (if any) is opened, and the entries are scanned for one with a 'groupid.user.member' attribute which matches the identifier we're looking for.</p>
+    <p>This is peculiar to this server, I believe, since it allows for users to define their own authorization groups for their own use, such as "/groupid/user/dwd/My Mates/", which might contain entries pointing to, erm, my mates. I can't see this being a security risk, I can see it reducing administrative load, as it allows people to share data they have administrative rights over in flexible and sane ways.</p>
+    <p>If the group name begins with a ':', it's treated as a UNIX group, and the members of that group are scanned for a matching username.</p>
+    <p>Finally, if the group name begins with '@', then the remainder is treated as a realm, and compared to the user's realm (that is, the part of their identifier after an '@'.)</p>
+    <p>All identifers, group or not, can be made negative, forming interesting stuff like '-/:wheel', meaning "These rights are to be taken away from any identifer in the UNIX group wheel".</p>
+    
+    <h3>Inheritance</h3>
+    <p>All rights are considered through inheritance, so you can make some attributes mandatory by using "-anyone" identifiers in inherited datasets.</p>
+    <h3>$owner is dangerous</h3>
+    <p>There is an owner macro, but it's carefully not documented. It's frightnening and dangerous.</p>
+    <hr>
+    <address><a href="mailto:dave@cridland.net">Dave Cridland</a></address>
+<!-- Created: Tue Aug 10 15:36:40 BST 2004 -->
+<!-- hhmts start -->
+Last modified: Thu Dec  2 16:50:17 GMT 2004
+<!-- hhmts end -->
+  </body>
+</html>

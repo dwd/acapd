@@ -3,6 +3,8 @@ acapd
 
 Infotrope ACAP Server
 
+(License changed from GPLv2 to MIT on 15th Jan 2014.)
+
 (This README written 7th Jan, 2014)
 
 This is work that I did about a decade ago. As such, it's littered with an

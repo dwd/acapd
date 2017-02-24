@@ -1,4 +1,6 @@
 // -*- c++ -*-
+#ifndef INFOTROPE_TCPSTREAM_TCC
+#define INFOTROPE_TCPSTREAM_TCC
 #include <infotrope/config.h>
 #include <infotrope/stream/tcpstream.hh>
 #include <infotrope/stream/fdstreambuf.hh>
@@ -12,6 +14,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <errno.h>
+#include <string.h>
 
 namespace Infotrope {
   
@@ -161,3 +164,4 @@ namespace Infotrope {
   }
 }
 
+#endif

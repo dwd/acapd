@@ -195,8 +195,8 @@ namespace {
     pthread_t m_who;
     list< magic_ptr<Subcontext> > m_set;
     list< magic_ptr<Dataset> > m_paths;
-    list< weak_ptr<Sink> > m_cxts;
-    list< weak_ptr<Sink> > m_cxts_pending;
+    std::list< Infotrope::Utils::weak_ptr<Sink> > m_cxts;
+    std::list< Infotrope::Utils::weak_ptr<Sink> > m_cxts_pending;
     Transaction * m_current;
     Modtime m_modtime;
     Modtime m_poke_modtime;
@@ -302,7 +302,7 @@ void Transaction::add( Path const & p ) {
   add( Datastore::datastore().dataset( p ) );
 }
 
-void Transaction::add( weak_ptr<Sink> const & p ) {
+void Transaction::add( Infotrope::Utils::weak_ptr<Sink> const & p ) {
   if ( !transaction_inst().mine() ) {
     throw std::runtime_error( "No transaction in progress, but add dataset requested." );
   }

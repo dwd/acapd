@@ -31,10 +31,10 @@ bool Infotrope::Utils::Utf8::validate( std::string const & str, bool genexcept )
 	    if( (cc&0x1E)==0 ) {
 	      throw std::runtime_error( "Validation error: Overlong UTF-8 sequence." );
 	    }
-	  } else if( cc&0xF0==0xE0 ) {
+	  } else if( (cc&0xF0)==0xE0 ) {
 	    octets=2;
 	    if( (cc&0x0F)==0 ) {
-	      if( str[c+1]&0xE0==0 ) {
+	      if( (str[c+1]&0xE0)==0 ) {
 		throw std::runtime_error( "Validation error: Overlong UTF-8 sequence." );
 	      }
 	    }

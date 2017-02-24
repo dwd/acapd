@@ -1,4 +1,6 @@
 // -*- c++ -*-
+#ifndef INFOTROPE_SASLBUF_TCC
+#define INFOTROPE_SASLBUF_TCC
 #include <infotrope/stream/saslstreambuf.hh>
 extern "C" {
 #include <sasl/sasl.h>
@@ -97,3 +99,5 @@ namespace Infotrope {
     }
   }
 }
+
+#endif

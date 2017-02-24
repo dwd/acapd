@@ -36,6 +36,7 @@
 #include <unistd.h>
 #include <string>
 #include <fstream>
+#include <cstring>
 
 using namespace Infotrope::Server;
 using namespace Infotrope::Threading;

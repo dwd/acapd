@@ -1,4 +1,6 @@
 // -*- c++ -*-
+#ifndef INFOTROPE_DEFLATEBUF_TCC
+#define INFOTROPE_DEFLATEBUF_TCC
 #include <infotrope/stream/deflatestreambuf.hh>
 #include <zlib.h>
 
@@ -121,3 +123,5 @@ namespace Infotrope {
     }
   }
 }
+
+#endif

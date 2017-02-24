@@ -28,7 +28,7 @@ namespace Infotrope {
   namespace Threading {
     
     class Mutex;
-    
+
     class SigMutex : public Mutex {
     private:
       pthread_cond_t m_cond;
